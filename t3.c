@@ -92,7 +92,7 @@ int* get_info(FILE* f, int* len)
     return v;
 }
 
-struct PCB make_PCB(FILE* f, int pid)
+struct PCB* make_PCB(FILE* f, int pid)
 {
     struct PCB p;
 
@@ -104,7 +104,10 @@ struct PCB make_PCB(FILE* f, int pid)
 
     p.next = NULL;
 
-    return p;
+    struct PCB *pointer = &p;
+    
+
+    return pointer;
 }
 
 void main()
@@ -119,21 +122,23 @@ void main()
     int cont_proc = 0;
 
     struct PCB *head;
+    struct PCB *point;
 
     int next = get_int(fin);
 
     cont_proc++;
-    struct PCB p1 = make_PCB(fin,cont_proc);
 
-    next = get_int(fin);
+    head = make_PCB(fin,cont_proc);
+    point = head;
 
-    cont_proc++;
-    struct PCB p2 = make_PCB(fin,cont_proc);
-    p1.next = &p2;
+    for(int i = 0; i < qtde_proc-1;i++)
+    {
+        next = get_int(fin);
+        cont_proc++;
+        point->next = make_PCB(fin,cont_proc);
+    }
 
-    head = &p1;
-
-    printf("%d\n", head->next->len_info);
+    
 
     fprintf(fout, "Quantidade de processos: %d\n", qtde_proc);
     fprintf(fout, "Quantidade de dispositivos: %d\n", qtde_disp);

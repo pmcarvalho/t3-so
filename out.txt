@@ -1,0 +1,2 @@
+Quantidade de processos: 3
+Quantidade de dispositivos: 3

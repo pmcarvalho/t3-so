@@ -110,6 +110,8 @@ struct PCB* make_PCB(FILE* f, int pid)
     return pointer;
 }
 
+
+
 void main()
 {
     FILE* fin = get_file("in.txt","r");
@@ -121,25 +123,33 @@ void main()
     int* v_disp = get_disp(fin,qtde_disp);
     int cont_proc = 0;
 
-    struct PCB *head;
-    struct PCB *point;
+    struct PCB *head = NULL;
+    struct PCB *point = NULL;
 
+    int time = 0;
     int next = get_int(fin);
 
-    cont_proc++;
-
-    head = make_PCB(fin,cont_proc);
-    point = head;
-
-    for(int i = 0; i < qtde_proc-1;i++)
+    while(cont_proc < qtde_proc && time < 10)
     {
-        next = get_int(fin);
-        cont_proc++;
-        point->next = make_PCB(fin,cont_proc);
+        printf("Next = %d, Time = %d\n", next, time);
+        if(next == time)
+        {
+            cont_proc++;
+            if(head == NULL)
+            {
+                head = make_PCB(fin,cont_proc);
+                point = head;
+            }
+            else
+            {
+                point->next = make_PCB(fin,cont_proc);
+            }
+            next = get_int(fin);
+
+        }  
+        time++;  
     }
-
     
-
     fprintf(fout, "Quantidade de processos: %d\n", qtde_proc);
     fprintf(fout, "Quantidade de dispositivos: %d\n", qtde_disp);
 

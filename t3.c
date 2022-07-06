@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 struct PCB
 {
@@ -94,20 +95,17 @@ int* get_info(FILE* f, int* len)
 
 struct PCB* make_PCB(FILE* f, int pid)
 {
-    struct PCB p;
+    struct PCB* p = (struct PCB *) malloc(sizeof(struct PCB));
 
-    p.id = pid;
-    p.estado = "new";
-    p.t_espera = 0;
+    p->id = pid;
+    p->estado = "new";
+    p->t_espera = 0;
 
-    p.info = get_info(f,&p.len_info);
+    p->info = get_info(f,&p->len_info);
 
-    p.next = NULL;
+    p->next = NULL;
 
-    struct PCB *pointer = &p;
-    
-
-    return pointer;
+    return p;
 }
 
 
@@ -127,31 +125,69 @@ void main()
     struct PCB *point = NULL;
 
     int time = 0;
-    int next = get_int(fin);
+    int nex = get_int(fin);
 
-    while(cont_proc < qtde_proc && time < 10)
+    while(time < 5)
     {
-        printf("Next = %d, Time = %d\n", next, time);
-        if(next == time)
+        if(nex == time)
         {
-            cont_proc++;
-            if(head == NULL)
+            if(cont_proc == 0)
             {
                 head = make_PCB(fin,cont_proc);
-                point = head;
             }
             else
             {
-                point->next = make_PCB(fin,cont_proc);
+              
+                if(cont_proc == 1)
+                {
+                    
+                    head->next = make_PCB(fin,cont_proc);
+                    point = head->next;
+                }    
+                else
+                {
+                    
+                    point->next = make_PCB(fin,cont_proc);
+                    point = point->next;
+                    
+                }
+                
+                
             }
-            next = get_int(fin);
+            
+            cont_proc++;
+            nex = get_int(fin);
 
         }  
+        
+        
+        for (int i = 0; i < cont_proc; i++)
+        {
+            
+            if(i == 0)
+            {
+                printf("<%d> <%s> ", time, head->estado);
+                point = head;
+            }
+            else if(point->next != NULL)
+            {
+                printf("<%s> ", point->estado);
+                point = point->next;
+            }
+            
+        }
+        printf("\n");
+        
+        
+        
         time++;  
+
     }
     
     fprintf(fout, "Quantidade de processos: %d\n", qtde_proc);
     fprintf(fout, "Quantidade de dispositivos: %d\n", qtde_disp);
+
+    //printf("<%s> ", head->estado);
 
     free(v_disp);
     fclose(fin);

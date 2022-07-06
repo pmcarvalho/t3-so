@@ -11,7 +11,8 @@ struct PCB
     int* info;
     int len_info;
 
-    struct PCB *next;
+    struct PCB *next_queue;
+    struct PCB *next_total;
 };
 
 
@@ -103,30 +104,28 @@ struct PCB* make_PCB(FILE* f, int pid)
 
     p->info = get_info(f,&p->len_info);
 
-    p->next = NULL;
+    p->next_queue = NULL;
+    p->next_total = NULL;
 
     return p;
 }
 
 
-void print_states(int quant_proc, int time, struct PCB* head, struct PCB* point)
+void print_states(int time, struct PCB* total)
 {
-    for (int i = 0; i < quant_proc; i++)
-        {
-            
-            if(i == 0)
-            {
-                printf("<%d> <%s> ", time, head->estado);
-                point = head;
-            }
-            else if(point->next != NULL)
-            {
-                printf("<%s> ", point->estado);
-                point = point->next;
-            }
-            
-        }
-        printf("\n");
+    struct PCB* aux = (struct PCB*) malloc(sizeof(struct PCB));
+    aux = total->next_total;
+    printf("<%d> <%s> ", time, total->estado);
+
+    while(aux !=NULL)
+    {        
+        
+        printf("<%s> ", aux->estado);
+        aux = aux->next_queue;
+        
+    }
+    printf("\n");
+    free(aux);
 }
 
 void processor(FILE* fin, FILE* fout)
@@ -137,8 +136,14 @@ void processor(FILE* fin, FILE* fout)
     int* v_disp = get_disp(fin,qtde_disp);
     int cont_proc = 0;
 
-    struct PCB *head = NULL;
-    struct PCB *point = NULL;
+    struct PCB *total = NULL;
+    struct PCB *new = NULL;
+    struct PCB *hnew = NULL;
+    struct PCB *running = NULL;
+    struct PCB *ready = NULL;
+    struct PCB *pointer1 = NULL;
+    struct PCB *pointer2 = NULL;
+
 
     int time = 0;
     int started_running = time;
@@ -148,29 +153,36 @@ void processor(FILE* fin, FILE* fout)
     {
         if(next == time)
         {
-            if(cont_proc == 0)
+            if(new == NULL)
             {
-                head = make_PCB(fin,cont_proc);
+                new = make_PCB(fin,cont_proc);
+                pointer1 = new;
             }
             else
             {
-              
-                if(cont_proc == 1)
+                pointer1 = new;
+                while(pointer1->next_queue != NULL)
                 {
-                    
-                    head->next = make_PCB(fin,cont_proc);
-                    point = head->next;
-                }    
-                else
-                {
-                    
-                    point->next = make_PCB(fin,cont_proc);
-                    point = point->next;
-                    
+                    pointer1 = pointer1->next_queue;
                 }
-                
-                
+                pointer1->next_queue = make_PCB(fin,cont_proc);
+                pointer1 = pointer1->next_queue;
             }
+
+            if(total == NULL)
+            {
+                total = pointer1;
+            }
+            else
+            {
+                pointer2 = total;
+                while(pointer2->next_total != NULL)
+                {
+                    pointer2 = pointer2->next_total;
+                }
+                pointer2->next_total = pointer1;
+            }
+
             
             cont_proc++;
             next = get_int(fin);
@@ -178,7 +190,7 @@ void processor(FILE* fin, FILE* fout)
         }  
         
         
-        print_states(cont_proc,time,head,point);
+        print_states(time,total);
         
         
         

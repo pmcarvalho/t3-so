@@ -109,12 +109,28 @@ struct PCB* make_PCB(FILE* f, int pid)
 }
 
 
-
-void main()
+void print_states(int quant_proc, int time, struct PCB* head, struct PCB* point)
 {
-    FILE* fin = get_file("in.txt","r");
-    FILE* fout = get_file("out.txt","w");
+    for (int i = 0; i < quant_proc; i++)
+        {
+            
+            if(i == 0)
+            {
+                printf("<%d> <%s> ", time, head->estado);
+                point = head;
+            }
+            else if(point->next != NULL)
+            {
+                printf("<%s> ", point->estado);
+                point = point->next;
+            }
+            
+        }
+        printf("\n");
+}
 
+void processor(FILE* fin, FILE* fout)
+{
     int qtde_proc = get_int(fin);
     int qtde_disp = get_int(fin);
    
@@ -125,11 +141,12 @@ void main()
     struct PCB *point = NULL;
 
     int time = 0;
-    int nex = get_int(fin);
+    int started_running = time;
+    int next = get_int(fin);
 
     while(time < 5)
     {
-        if(nex == time)
+        if(next == time)
         {
             if(cont_proc == 0)
             {
@@ -156,27 +173,12 @@ void main()
             }
             
             cont_proc++;
-            nex = get_int(fin);
+            next = get_int(fin);
 
         }  
         
         
-        for (int i = 0; i < cont_proc; i++)
-        {
-            
-            if(i == 0)
-            {
-                printf("<%d> <%s> ", time, head->estado);
-                point = head;
-            }
-            else if(point->next != NULL)
-            {
-                printf("<%s> ", point->estado);
-                point = point->next;
-            }
-            
-        }
-        printf("\n");
+        print_states(cont_proc,time,head,point);
         
         
         
@@ -187,9 +189,17 @@ void main()
     fprintf(fout, "Quantidade de processos: %d\n", qtde_proc);
     fprintf(fout, "Quantidade de dispositivos: %d\n", qtde_disp);
 
-    //printf("<%s> ", head->estado);
 
     free(v_disp);
+}
+
+void main()
+{
+    FILE* fin = get_file("in.txt","r");
+    FILE* fout = get_file("out.txt","w");
+
+    processor(fin,fout);
+
     fclose(fin);
     fclose(fout);
 }
